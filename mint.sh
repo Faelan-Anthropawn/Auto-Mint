@@ -45,6 +45,7 @@ fi
 ########################################
 # Configure xsecurelock autolock
 ########################################
+# Configure xsecurelock autolock
 echo "Configuring xsecurelock autostart..."
 
 # Disable Cinnamon built-in lockscreen
@@ -68,6 +69,24 @@ Exec=/usr/bin/xss-lock --transfer-sleep-lock -- xsecurelock
 X-GNOME-Autostart-enabled=true
 NoDisplay=false
 EOF
+
+# Create systemd service to trigger lock on suspend
+echo "Creating systemd service for xss-lock..."
+sudo tee /etc/systemd/system/xss-lock-suspend.service > /dev/null <<'EOF'
+[Unit]
+Description=Lock screen before suspend
+Before=sleep.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/xss-lock --transfer-sleep-lock -- xsecurelock
+
+[Install]
+WantedBy=sleep.target
+EOF
+
+# Enable the systemd service to run on suspend/hibernate
+sudo systemctl enable xss-lock-suspend.service
 
 ########################################
 # Disable Cinnamon lockscreen

@@ -266,9 +266,22 @@ sudo apt install -y mint-y-icons
 mkdir -p ~/.icons
 cd /tmp
 
+########################################
+# Install Bibata cursor theme
+########################################
+
+echo "Installing Bibata cursor theme..."
+
+mkdir -p ~/.icons
+cd /tmp
+
 wget -q https://github.com/ful1e5/Bibata_Cursor/releases/latest/download/Bibata-Modern-Classic.tar.xz
 tar -xf Bibata-Modern-Classic.tar.xz
 
+# Remove old version if exists
+rm -rf ~/.icons/Bibata-Modern-Classic
+
+# Move new version
 mv Bibata-Modern-Classic ~/.icons/
 
 ########################################

@@ -17,6 +17,16 @@ echo "Updating packages..."
 sudo apt update
 sudo apt upgrade -y
 
+# install common video dependencies
+
+echo "Installing dependencies: ffmpeg, xdotool, and x11-utils..."
+
+sudo apt update
+sudo apt install -y \
+ffmpeg \
+xdotool \
+x11-utils
+
 ########################################
 # Install base packages
 ########################################

@@ -43,6 +43,33 @@ EOF
 fi
 
 ########################################
+# Configure xsecurelock autolock
+########################################
+echo "Configuring xsecurelock autostart..."
+
+# Disable Cinnamon built-in lockscreen
+gsettings set org.cinnamon.desktop.screensaver lock-enabled false
+
+# Set DPMS and screensaver timeout
+xset s 300 300        # Screen saver timeout: 300s
+xset +dpms
+xset dpms 300 300 300 # Standby, suspend, off (all at 5 min)
+
+# Start xss-lock with xsecurelock
+xss-lock --transfer-sleep-lock -- xsecurelock &
+
+# Make sure xss-lock starts on every login
+mkdir -p ~/.config/autostart
+cat > ~/.config/autostart/xss-lock.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=xss-lock
+Exec=/usr/bin/xss-lock --transfer-sleep-lock -- xsecurelock
+X-GNOME-Autostart-enabled=true
+NoDisplay=false
+EOF
+
+########################################
 # Disable Cinnamon lockscreen
 ########################################
 echo "Disabling Cinnamon lockscreen..."

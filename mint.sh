@@ -21,13 +21,17 @@ echo "Run this script as a normal user, not root."
 exit 1
 fi
 
+# Detect real user
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_UID="$(id -u "$REAL_USER")"
+
 ########################################
 # Helper Functions
 ########################################
 
 run_user() {
-sudo -u "$SUDO_USER" \
-DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u "$SUDO_USER")/bus" \
+sudo -u "$REAL_USER" \
+DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$REAL_UID/bus" \
 "$@"
 }
 

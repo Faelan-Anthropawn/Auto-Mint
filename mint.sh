@@ -1,101 +1,48 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
+set -e
 
-LOG="$HOME/bootstrap.log"
-exec > >(tee -a "$LOG") 2>&1
-
-trap 'echo "❌ Error on line $LINENO"; exit 1' ERR
-
-echo "================================="
-echo "Mint Workstation Bootstrap"
-echo "Log: $LOG"
-echo "================================="
-
-########################################
-# Safety
-########################################
-
-if [[ $EUID -eq 0 ]]; then
-echo "Run this script as a normal user, not root."
-exit 1
-fi
-
-########################################
-# Helper Functions
-########################################
-
-run_user() {
-sudo -u "$SUDO_USER" \
-DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u "$SUDO_USER")/bus" \
-"$@"
-}
-
-ensure_dir() {
-mkdir -p "$1"
-}
-
-pkg_installed() {
-dpkg -s "$1" >/dev/null 2>&1
-}
-
-install_pkg() {
-if ! pkg_installed "$1"; then
-sudo apt install -y "$1"
-fi
-}
-
-command_exists() {
-command -v "$1" >/dev/null 2>&1
-}
-
-########################################
-# Sudo Keepalive
-########################################
-
+# keep sudo alive
 sudo -v
+while true; do sudo -n true; sleep 60; done 2>/dev/null &
 
-while true; do
-sudo -n true
-sleep 60
-done 2>/dev/null &
+echo "=============================="
+echo "Mint Workstation Bootstrap"
+echo "=============================="
 
 ########################################
-# System Update
+# Update system
 ########################################
 
-echo "Updating system..."
+echo "Updating packages..."
 
 sudo apt update
 sudo apt upgrade -y
 
 ########################################
-# Base Packages
+# Install base packages
 ########################################
 
-BASE=(
-curl
-wget
-git
-xsecurelock
-xss-lock
-nodejs
-apt-transport-https
+echo "Installing base tools..."
+
+sudo apt install -y \
+curl \
+wget \
+git \
+xsecurelock \
+xss-lock \
+nodejs \
+apt-transport-https \
 gpg
-)
-
-for p in "${BASE[@]}"; do
-install_pkg "$p"
-done
 
 ########################################
-# xsecurelock
+# Configure xsecurelock
 ########################################
 
 echo "Configuring xsecurelock..."
 
-if [[ ! -f "$HOME/.xinitrc" ]]; then
-cat > "$HOME/.xinitrc" <<EOF
+if [ ! -f ~/.xinitrc ]; then
+cat > ~/.xinitrc <<'EOF'
 xss-lock --transfer-sleep-lock -- xsecurelock &
 exec dbus-run-session cinnamon-session
 EOF
@@ -105,158 +52,204 @@ fi
 # Disable Cinnamon lockscreen
 ########################################
 
-echo "Disabling Cinnamon lock screen..."
+echo "Disabling Cinnamon lockscreen..."
 
-run_user gsettings set org.cinnamon.desktop.screensaver lock-enabled false || true
+gsettings set org.cinnamon.desktop.screensaver lock-enabled false
 
 ########################################
-# Verbose Boot
+# Verbose boot
 ########################################
 
-echo "Setting verbose boot..."
+echo "Configuring verbose boot..."
 
-if grep -q GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub; then
-sudo sed -i \
-'s/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="loglevel=7"/' \
-/etc/default/grub
-else
-echo 'GRUB_CMDLINE_LINUX_DEFAULT="loglevel=7"' | sudo tee -a /etc/default/grub
-fi
-
+sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="loglevel=7"/' /etc/default/grub
 sudo update-grub
 
 ########################################
-# Remove splash
+# Remove Plymouth splash
 ########################################
 
-echo "Removing Plymouth splash..."
+echo "Removing splash screen..."
 
 sudo apt remove -y plymouth-theme* || true
 sudo update-initramfs -u
 
 ########################################
-# Brave Install
+# Remove Firefox + Thunderbird
+########################################
+
+echo "Removing Firefox and Thunderbird..."
+
+sudo apt purge -y firefox thunderbird || true
+sudo apt autoremove -y
+
+########################################
+# Install Brave
 ########################################
 
 echo "Installing Brave..."
 
-if ! command_exists brave-browser; then
-
-sudo mkdir -p /etc/apt/keyrings
-
-curl -fsS \
-https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg \
-| sudo tee /etc/apt/keyrings/brave-browser.gpg >/dev/null
-
-echo "deb [signed-by=/etc/apt/keyrings/brave-browser.gpg] \
-https://brave-browser-apt-release.s3.brave.com/ stable main" \
-| sudo tee /etc/apt/sources.list.d/brave-browser-release.list
-
-sudo apt update
-sudo apt install -y brave-browser
-
-fi
+curl -fsS https://dl.brave.com/install.sh | sh
 
 ########################################
-# Brave Policies
+# Brave hardened configuration
 ########################################
 
-echo "Applying Brave policies..."
+echo "Applying Brave enterprise policies..."
 
-sudo install -d /etc/brave-browser/policies/managed
+sudo mkdir -p /etc/brave/policies/managed
 
-sudo tee /etc/brave-browser/policies/managed/policies.json >/dev/null <<'EOF'
+sudo tee /etc/brave/policies/managed/policies.json > /dev/null <<'EOF'
 {
-"HomepageIsNewTabPage": true,
-"RestoreOnStartup": 1,
-"ShowBookmarksBar": true,
-"PasswordManagerEnabled": false,
-"EnableDoNotTrack": true,
-"HardwareAccelerationModeEnabled": false,
-"BlockThirdPartyCookies": true,
-"BraveRewardsDisabled": true,
-"BraveWalletDisabled": true,
-"MetricsReportingEnabled": false,
-"SigninAllowed": false,
-"HttpsUpgradesEnabled": true,
-"BraveShieldsDefault": 2
+  "HomepageIsNewTabPage": true,
+  "RestoreOnStartup": 1,
+  "ShowBookmarksBar": true,
+  "BookmarkBarEnabled": true,
+
+  "PasswordManagerEnabled": false,
+  "EnableDoNotTrack": true,
+  "HardwareAccelerationModeEnabled": false,
+  "BackgroundModeEnabled": false,
+
+  "BlockThirdPartyCookies": true,
+
+  "BraveRewardsDisabled": true,
+  "BraveWalletDisabled": true,
+
+  "MetricsReportingEnabled": false,
+  "SigninAllowed": false,
+
+  "DefaultSearchProviderEnabled": true,
+  "DefaultSearchProviderName": "DuckDuckGo",
+  "DefaultSearchProviderSearchURL": "https://duckduckgo.com/?q={searchTerms}",
+
+  "ClearBrowsingDataOnExitList": [
+    "browsing_history",
+    "download_history",
+    "cookies_and_other_site_data",
+    "cached_images_and_files"
+  ],
+
+  "HttpsUpgradesEnabled": true,
+  "BraveShieldsDefault": 2,
+
+  "WebRtcIPHandlingPolicy": "disable_non_proxied_udp",
+
+  "MemorySaverModeEnabled": true,
+
+  "ExtensionInstallSources": [
+    "https://clients2.google.com/service/update2/crx"
+  ],
+
+  "ExtensionInstallForcelist": [
+    "ghmbeldphafepmbegfdlkpapadhbakde;https://clients2.google.com/service/update2/crx"
+  ],
+
+  "ManagedBookmarks": [
+    {
+      "toplevel_name": "Managed"
+    },
+    {
+      "name": "Drive",
+      "url": "https://duckduckgo.com"
+    },
+    {
+      "name": "Mail",
+      "url": "https://mail.proton.me"
+    },
+    {
+      "name": "Sparked",
+      "url": "https://control.sparkedhost.us/server/ea179819"
+    },
+    {
+      "name": "Website",
+      "children": [
+        {
+          "name": "Github",
+          "url": "https://drive.proton.me"
+        },
+        {
+          "name": "Cloudflare",
+          "url": "https://dash.cloudflare.com/login"
+        },
+        {
+          "name": "Replit",
+          "url": "https://calendar.proton.me"
+        }
+      ]
+    }
+  ]
 }
 EOF
 
 ########################################
-# ProtonVPN
+# Install ProtonVPN
 ########################################
 
 echo "Installing ProtonVPN..."
 
-if ! command_exists protonvpn-app; then
+TMPDIR=$(mktemp -d)
+cd "$TMPDIR"
 
-TMP=$(mktemp -d)
-pushd "$TMP"
-
-wget -q \
-https://repo.protonvpn.com/debian/dists/stable/main/binary-all/protonvpn-stable-release_1.0.8_all.deb
+wget -q https://repo.protonvpn.com/debian/dists/stable/main/binary-all/protonvpn-stable-release_1.0.8_all.deb
 
 sudo dpkg -i protonvpn-stable-release_1.0.8_all.deb
-
 sudo apt update
 sudo apt install -y proton-vpn-gnome-desktop
 
-popd
-rm -rf "$TMP"
-
-fi
+cd ~
+rm -rf "$TMPDIR"
 
 ########################################
-# ProtonVPN Autostart
+# ProtonVPN autostart
 ########################################
 
-ensure_dir "$HOME/.local/bin"
-ensure_dir "$HOME/.config/autostart"
+echo "Creating ProtonVPN autostart..."
 
-cat > "$HOME/.local/bin/protonvpn-autostart" <<'EOF'
+mkdir -p ~/.local/bin
+
+cat > ~/.local/bin/protonvpn-autostart <<'EOF'
 #!/bin/bash
 
 until gdbus call --session \
---dest org.freedesktop.secrets \
---object-path /org/freedesktop/secrets \
---method org.freedesktop.DBus.Peer.Ping >/dev/null 2>&1
+  --dest org.freedesktop.secrets \
+  --object-path /org/freedesktop/secrets \
+  --method org.freedesktop.DBus.Peer.Ping >/dev/null 2>&1
 do
-sleep 1
+  sleep 1
 done
 
 protonvpn-app
 EOF
 
-chmod +x "$HOME/.local/bin/protonvpn-autostart"
+chmod +x ~/.local/bin/protonvpn-autostart
 
-cat > "$HOME/.config/autostart/protonvpn.desktop" <<EOF
+mkdir -p ~/.config/autostart
+
+cat > ~/.config/autostart/protonvpn.desktop <<EOF
 [Desktop Entry]
 Type=Application
 Exec=$HOME/.local/bin/protonvpn-autostart
+Hidden=false
+NoDisplay=false
 X-GNOME-Autostart-enabled=true
 Name=ProtonVPN
 EOF
 
 ########################################
-# Java (Temurin)
+# Install Java (Temurin)
 ########################################
 
 echo "Installing Java..."
 
-sudo apt purge -y '*java*' '*jdk*' '*jre*' || true
+sudo apt remove --purge -y '*java*' '*jdk*' '*jre*' || true
 sudo apt autoremove -y
 
-sudo mkdir -p /etc/apt/keyrings
-
-wget -qO - \
-https://packages.adoptium.net/artifactory/api/gpg/key/public \
+wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public \
 | gpg --dearmor \
-| sudo tee /etc/apt/keyrings/adoptium.gpg >/dev/null
+| sudo tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null
 
-echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] \
-https://packages.adoptium.net/artifactory/deb \
-$(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
+echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^UBUNTU_CODENAME/{print$2}' /etc/os-release) main" \
 | sudo tee /etc/apt/sources.list.d/adoptium.list
 
 sudo apt update
@@ -266,74 +259,70 @@ sudo apt install -y temurin-25-jdk
 # Themes
 ########################################
 
-install_pkg mint-y-icons
+echo "Installing themes..."
 
-ensure_dir "$HOME/.icons"
+sudo apt install -y mint-y-icons
 
-TMP=$(mktemp -d)
-pushd "$TMP"
+mkdir -p ~/.icons
+cd /tmp
 
-wget -q \
-https://github.com/ful1e5/Bibata_Cursor/releases/latest/download/Bibata-Modern-Classic.tar.xz
-
+wget -q https://github.com/ful1e5/Bibata_Cursor/releases/latest/download/Bibata-Modern-Classic.tar.xz
 tar -xf Bibata-Modern-Classic.tar.xz
-mv Bibata-Modern-Classic "$HOME/.icons"
 
-popd
-rm -rf "$TMP"
+mv Bibata-Modern-Classic ~/.icons/
 
 ########################################
-# Remove Firefox / Thunderbird
-########################################
-
-sudo apt purge -y firefox thunderbird || true
-sudo apt autoremove -y
-
-xdg-settings set default-web-browser brave-browser.desktop || true
-
-########################################
-# Cinnamon UI
+# Cinnamon appearance
 ########################################
 
 echo "Applying Cinnamon settings..."
 
-run_user gsettings set org.cinnamon.desktop.interface gtk-theme "Mint-Y-Dark-Orange" || true
-run_user gsettings set org.cinnamon.desktop.wm.preferences theme "Mint-Y-Dark-Orange" || true
-run_user gsettings set org.cinnamon.desktop.interface icon-theme "Mint-Y-Yaru" || true
-run_user gsettings set org.cinnamon.desktop.interface cursor-theme "Bibata-Modern-Classic" || true
+gsettings set org.cinnamon.desktop.interface gtk-theme "Mint-Y-Dark-Orange"
+gsettings set org.cinnamon.desktop.wm.preferences theme "Mint-Y-Dark-Orange"
+gsettings set org.cinnamon.desktop.interface icon-theme "Mint-Y-Yaru"
+gsettings set org.cinnamon.theme name "Cinnamon"
+gsettings set org.cinnamon.desktop.interface cursor-theme "Bibata-Modern-Classic"
+
+gsettings set org.cinnamon first-launch false
+gsettings set com.linuxmint.updates hide-systray true
+
+########################################
+# Fonts
+########################################
+
+echo "Applying fonts..."
+
+gsettings set org.cinnamon.desktop.interface font-name "Ubuntu Bold 10"
+gsettings set org.cinnamon.desktop.interface document-font-name "Ubuntu Bold 10"
+gsettings set org.cinnamon.desktop.interface monospace-font-name "Ubuntu Bold 10"
+gsettings set org.cinnamon.desktop.wm.preferences titlebar-font "Ubuntu Medium 10"
 
 ########################################
 # Touchpad
 ########################################
 
-if gsettings list-schemas | grep -q org.cinnamon.desktop.peripherals.touchpad; then
+echo "Configuring touchpad..."
 
-run_user gsettings set org.cinnamon.desktop.peripherals.touchpad natural-scroll false
-run_user gsettings set org.cinnamon.desktop.peripherals.touchpad tap-to-click true
-run_user gsettings set org.cinnamon.desktop.peripherals.touchpad click-method 'fingers'
-run_user gsettings set org.cinnamon.desktop.peripherals.touchpad tap-button-map 'lrm'
-
-fi
+gsettings set org.cinnamon.desktop.peripherals.touchpad natural-scroll false
+gsettings set org.cinnamon.desktop.peripherals.touchpad click-method 'fingers'
+gsettings set org.cinnamon.desktop.peripherals.touchpad tap-to-click true
+gsettings set org.cinnamon.desktop.peripherals.touchpad tap-button-map 'lrm'
 
 ########################################
-# Idle timeout
+# Screen timeout
 ########################################
 
-run_user gsettings set org.cinnamon.desktop.session idle-delay 600 || true
+echo "Setting idle timeout..."
+
+gsettings set org.cinnamon.desktop.session idle-delay 600
 
 ########################################
 # Finished
 ########################################
 
 echo ""
-echo "================================="
+echo "=============================="
 echo "Bootstrap Complete"
-echo "================================="
+echo "=============================="
 echo ""
-echo "Reboot recommended."
-echo ""
-echo "Log saved to:"
-echo "$LOG"
-echo ""
-echo "Log saved to:"
-echo "$LOG"
+echo "Recommended: Reboot to apply GRUB changes."

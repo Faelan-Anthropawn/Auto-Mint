@@ -255,8 +255,6 @@ gsettings set org.cinnamon.desktop.wm.preferences titlebar-font "Ubuntu Medium 1
 echo "Configuring touchpad..."
 gsettings set org.cinnamon.desktop.peripherals.touchpad natural-scroll false
 gsettings set org.cinnamon.desktop.peripherals.touchpad click-method 'fingers'
-gsettings set org.cinnamon.desktop.peripherals.touchpad tap-to-click true
-gsettings set org.cinnamon.desktop.peripherals.touchpad tap-button-map 'lrm'
 
 ########################################
 # Screen timeout

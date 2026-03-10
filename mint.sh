@@ -2,7 +2,6 @@
 
 set -e
 
-# keep sudo alive
 sudo -v
 while true; do sudo -n true; sleep 60; done 2>/dev/null &
 
@@ -56,18 +55,14 @@ echo "=============================="
 echo "Configuring xss-lock"
 echo "=============================="
 
-# Disable Cinnamon's built-in lockscreen, let xss-lock take over
 gsettings set org.cinnamon.desktop.screensaver lock-enabled false
 
-# Set DPMS and screensaver timeout (idle delay)
 xset s 300 300          # Screen saver timeout: 300s
 xset +dpms
 xset dpms 300 300 300   # Standby, suspend, off (all at 5 min)
 
-# Start xss-lock with xsecurelock
 xss-lock --transfer-sleep-lock -- xsecurelock &
 
-# Ensure xss-lock starts on every login
 mkdir -p ~/.config/autostart
 cat > ~/.config/autostart/xss-lock.desktop <<'EOF'
 [Desktop Entry]
@@ -78,7 +73,6 @@ X-GNOME-Autostart-enabled=true
 NoDisplay=false
 EOF
 
-# Create systemd service for xss-lock to run after suspend
 echo "Creating systemd service for xss-lock..."
 sudo tee /etc/systemd/system/xss-lock-suspend.service > /dev/null <<'EOF'
 [Unit]
@@ -93,7 +87,6 @@ ExecStart=/usr/bin/xss-lock --transfer-sleep-lock -- xsecurelock
 WantedBy=sleep.target
 EOF
 
-# Enable the systemd service to run on suspend/hibernate
 sudo systemctl enable xss-lock-suspend.service
 
 echo ""

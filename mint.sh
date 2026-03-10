@@ -81,8 +81,8 @@ sudo tee /etc/brave/policies/managed/policies.json > /dev/null <<'EOF'
 {
   "HomepageIsNewTabPage": true,
   "RestoreOnStartup": 1,
-  "ShowBookmarksBar": true,
-  "BookmarkBarEnabled": true,
+  "ShowsBar": true,
+  "BarEnabled": true,
 
   "PasswordManagerEnabled": false,
   "EnableDoNotTrack": true,
@@ -125,7 +125,7 @@ sudo tee /etc/brave/policies/managed/policies.json > /dev/null <<'EOF'
     },
     {
       "name": "Drive",
-      "url": "https://duckduckgo.com"
+      "url": "https://account.proton.me/drive"
     },
     {
       "name": "Mail",
@@ -140,7 +140,7 @@ sudo tee /etc/brave/policies/managed/policies.json > /dev/null <<'EOF'
       "children": [
         {
           "name": "Github",
-          "url": "https://drive.proton.me"
+          "url": "https://github.com/login"
         },
         {
           "name": "Cloudflare",
@@ -148,7 +148,7 @@ sudo tee /etc/brave/policies/managed/policies.json > /dev/null <<'EOF'
         },
         {
           "name": "Replit",
-          "url": "https://calendar.proton.me"
+          "url": "https://replit.com/login"
         }
       ]
     }

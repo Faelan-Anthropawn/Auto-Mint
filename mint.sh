@@ -42,24 +42,22 @@ exec dbus-run-session cinnamon-session
 EOF
 fi
 
-########################################
-# Configure xsecurelock autolock
-########################################
-# Configure xsecurelock autolock
-echo "Configuring xsecurelock autostart..."
+echo "=============================="
+echo "Configuring xss-lock"
+echo "=============================="
 
-# Disable Cinnamon built-in lockscreen
+# Disable Cinnamon's built-in lockscreen, let xss-lock take over
 gsettings set org.cinnamon.desktop.screensaver lock-enabled false
 
-# Set DPMS and screensaver timeout
-xset s 300 300        # Screen saver timeout: 300s
+# Set DPMS and screensaver timeout (idle delay)
+xset s 300 300          # Screen saver timeout: 300s
 xset +dpms
-xset dpms 300 300 300 # Standby, suspend, off (all at 5 min)
+xset dpms 300 300 300   # Standby, suspend, off (all at 5 min)
 
 # Start xss-lock with xsecurelock
 xss-lock --transfer-sleep-lock -- xsecurelock &
 
-# Make sure xss-lock starts on every login
+# Ensure xss-lock starts on every login
 mkdir -p ~/.config/autostart
 cat > ~/.config/autostart/xss-lock.desktop <<'EOF'
 [Desktop Entry]
@@ -70,7 +68,7 @@ X-GNOME-Autostart-enabled=true
 NoDisplay=false
 EOF
 
-# Create systemd service to trigger lock on suspend
+# Create systemd service for xss-lock to run after suspend
 echo "Creating systemd service for xss-lock..."
 sudo tee /etc/systemd/system/xss-lock-suspend.service > /dev/null <<'EOF'
 [Unit]
@@ -88,14 +86,13 @@ EOF
 # Enable the systemd service to run on suspend/hibernate
 sudo systemctl enable xss-lock-suspend.service
 
-########################################
-# Disable Cinnamon lockscreen
-########################################
-echo "Disabling Cinnamon lockscreen..."
-gsettings set org.cinnamon.desktop.screensaver lock-enabled false
+echo ""
+echo "=============================="
+echo "xss-lock configuration complete"
+echo "=============================="
 
 ########################################
-# Verbose boot
+# Verbose boot logging
 ########################################
 echo "Configuring verbose boot..."
 sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="loglevel=7"/' /etc/default/grub

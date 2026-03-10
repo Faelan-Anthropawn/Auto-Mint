@@ -247,7 +247,6 @@ gsettings set com.linuxmint.updates hide-systray true
 ########################################
 echo "Applying fonts..."
 gsettings set org.cinnamon.desktop.interface font-name "Ubuntu Bold 10"
-gsettings set org.cinnamon.desktop.interface document-font-name "Ubuntu Bold 10"
 gsettings set org.cinnamon.desktop.interface monospace-font-name "Ubuntu Bold 10"
 gsettings set org.cinnamon.desktop.wm.preferences titlebar-font "Ubuntu Medium 10"
 

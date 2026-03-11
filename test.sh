@@ -9,7 +9,7 @@ while true; do sudo -n true; sleep 60; done 2>/dev/null &
 # Install Brave
 ########################################
 
-echo "Installing Brave..."
+echo "Installing Brave nodd..."
 curl -fsS https://dl.brave.com/install.sh | sh
 
 ########################################

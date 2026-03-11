@@ -1,5 +1,5 @@
 ########################################
-# Install ProtonVPN
+# Install ProtonVPN and add autostart
 ########################################
 echo "Installing ProtonVPN..."
 TMPDIR=$(mktemp -d)
@@ -38,3 +38,12 @@ NoDisplay=false
 X-GNOME-Autostart-enabled=true
 Name=ProtonVPN
 EOF
+
+echo "Downloading and overwriting ProtonVPN configuration files..."
+
+mkdir -p ~/.config/ProtonVPN
+
+wget -q https://raw.githubusercontent.com/Faelan-Anthropawn/Auto-Mint/main/proton/app-config.json -O ~/.config/ProtonVPN/app-config.json
+wget -q https://raw.githubusercontent.com/Faelan-Anthropawn/Auto-Mint/main/proton/settings.json -O ~/.config/ProtonVPN/settings.json
+
+echo "ProtonVPN configuration files have been successfully overwritten."

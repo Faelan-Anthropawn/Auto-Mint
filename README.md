@@ -19,6 +19,7 @@ Currently included
   -  telemetry and google remnants removed and or disabled
   -  full data wiping on site close and browser close
   -  includes all standard brave protections
+  -  also comes with proton pass to minimize cookie loss annoyance
 
 - Xsecurelock
   -  light locker sucks as a lockscreen so xsecurelock fully replaces it

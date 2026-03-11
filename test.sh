@@ -140,14 +140,14 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
   "AutofillAddressEnabled": false,
   "AutofillCreditCardEnabled": false,
 
-  "EnableDoNotTrack": true,
+  "EnableDoNotTrack": true,  # Ensure Do Not Track is enabled
   "EnableReferrers": false,
 
   "HardwareAccelerationModeEnabled": false,
   "BackgroundModeEnabled": false,
   "BackgroundNetworkingEnabled": false,
 
-  "BlockThirdPartyCookies": true,
+  "BlockThirdPartyCookies": true,  # Aggressive blocking of third-party cookies
   "CookieControlsMode": 1,  # Aggressive cookie blocking
 
   "MetricsReportingEnabled": false,
@@ -157,10 +157,10 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
   "BraveRewardsDisabled": true,
   "BraveWalletDisabled": true,
   "BraveShieldsEnabled": true,
-  "BraveShieldsDefault": 2,
+  "BraveShieldsDefault": 2,  # Enhanced ad and tracker blocking
 
   "HttpsUpgradesEnabled": true,
-  "WebRtcIPHandlingPolicy": "disable_non_proxied_udp",  # WebRTC policy to disable non-proxied UDP
+  "WebRtcIPHandlingPolicy": "disable_non_proxied_udp",  # WebRTC IP handling policy
   "WebRTCUDPPortRange": "0-0",
 
   "ClearBrowsingDataOnExitList": [
@@ -168,7 +168,8 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
     "download_history",
     "cookies_and_other_site_data",
     "cached_images_and_files",
-    "site_settings"  # Added full data deletion on close
+    "site_settings",  # Ensuring all relevant data is cleared on exit
+    "passwords"  # Adding password data clearing on exit
   ],
 
   "DefaultSearchProviderEnabled": true,
@@ -224,7 +225,11 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
         }
       ]
     }
-  ]
+  ],
+
+  "BlockFingerprinting": true,  # Adding fingerprinting protection
+
+  "ShowBookmarkBar": "always"  # Always show the bookmark bar
 }
 EOF
 

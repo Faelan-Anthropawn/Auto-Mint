@@ -36,8 +36,9 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
   "BackgroundModeEnabled": false,
   "BackgroundNetworkingEnabled": false,
 
-  "BlockThirdPartyCookies": true,  # Aggressive blocking of third-party cookies
-  "CookieControlsMode": 1,  # Strict cookie blocking
+  # Aggressive blocking of third-party cookies, ads, and trackers
+  "BlockThirdPartyCookies": true,  
+  "CookieControlsMode": 2,  # Strict cookie blocking and data protection
 
   "MetricsReportingEnabled": false,
   "SigninAllowed": false,
@@ -48,18 +49,25 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
   "BraveShieldsEnabled": true,
   "BraveShieldsDefault": 2,  # Shields enabled by default for enhanced privacy
 
-  "HttpsUpgradesEnabled": true,
-  "WebRtcIPHandlingPolicy": "disable_non_proxied_udp",  # WebRTC IP handling policy
+  # WebRTC handling: disable non-proxied UDP IP leak
+  "WebRtcIPHandlingPolicy": "disable_non_proxied_udp", 
   "WebRTCUDPPortRange": "0-0",  # Blocking WebRTC leaks
 
+  # Enforcing Do Not Track
+  "EnableDoNotTrack": true,
+
+  # Full Data Deletion on Exit (including history, cookies, autofill, passwords, etc.)
   "ClearBrowsingDataOnExitList": [
-    "browsing_history",
-    "download_history",
-    "cookies_and_other_site_data",
-    "cached_images_and_files",
-    "site_settings",  # Deleting site settings on exit
-    "passwords",  # Deleting passwords on exit
-    "local_storage"  # Deleting local storage on exit
+    "browsing_history", 
+    "download_history", 
+    "cookies_and_other_site_data", 
+    "leo_ai_data", 
+    "cached_images_and_files", 
+    "passwords", 
+    "autofill_data", 
+    "site_settings", 
+    "shields_settings", 
+    "hosted_app_data"
   ],
 
   "DefaultSearchProviderEnabled": true,
@@ -117,7 +125,7 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
     }
   ],
 
-  "BlockFingerprinting": true,  # Block browser fingerprinting
+  "BlockFingerprinting": true,  # Blocking browser fingerprinting
 
   "ShowBookmarkBar": "always"  # Always show the bookmark bar
 }
@@ -138,7 +146,6 @@ echo "Applying Brave hardened launch flags..."
 sudo sed -i 's|Exec=brave-browser|Exec=brave-browser --disable-background-networking --disable-sync --disable-domain-reliability --disable-component-update --disable-features=InterestCohort,PrivacySandboxSettings4,AutofillServerCommunication --force-webrtc-ip-handling-policy=disable_non_proxied_udp|' /usr/share/applications/brave-browser.desktop
 
 echo "Brave hardened setup complete."
-
 echo " Complete"
 echo ""
 echo "Recommended: Reboot to apply GRUB changes."

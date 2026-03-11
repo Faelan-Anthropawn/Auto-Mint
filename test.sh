@@ -4,12 +4,11 @@ set -e
 
 sudo -v
 while true; do sudo -n true; sleep 60; done 2>/dev/null &
-
 ########################################
 # Install Brave
 ########################################
 
-echo "Installing Brave nodd..."
+echo "Installing Brave..."
 curl -fsS https://dl.brave.com/install.sh | sh
 
 ########################################
@@ -96,7 +95,7 @@ EOF
 sudo chmod -R 755 /etc/brave-browser/policies
 
 ########################################
-# backup Preferences install
+# Restore Custom Brave Preferences
 ########################################
 
 echo "Stopping Brave if it’s running..."
@@ -104,7 +103,7 @@ pkill brave-browser 2>/dev/null || true
 
 echo "Fetching custom Preferences file..."
 PREF_URL="https://raw.githubusercontent.com/Faelan-Anthropawn/Auto-Mint/main/Preferences"
-BRAVE_PREF_DIR="$HOME/.config/BraveSoftware/Brave-Browser"
+BRAVE_PREF_DIR="$HOME/.config/BraveSoftware/Brave-Browser/Default"
 
 # Ensure the config directory exists
 mkdir -p "$BRAVE_PREF_DIR"
@@ -122,7 +121,6 @@ echo "Applying Brave hardened launch flags..."
 
 sudo sed -i 's|Exec=brave-browser|Exec=brave-browser --disable-background-networking --disable-sync --disable-domain-reliability --disable-component-update --disable-features=InterestCohort,PrivacySandboxSettings4,AutofillServerCommunication --force-webrtc-ip-handling-policy=disable_non_proxied_udp|' /usr/share/applications/brave-browser.desktop
 
-echo "Brave hardened setup complete."
 echo "Brave hardened setup complete."
 echo " Complete"
 echo ""

@@ -115,6 +115,7 @@ echo "Removing Firefox and Thunderbird..."
 sudo apt purge -y firefox thunderbird || true
 sudo apt autoremove -y
 
+
 ########################################
 # Install Brave
 ########################################
@@ -147,7 +148,7 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
   "BackgroundNetworkingEnabled": false,
 
   "BlockThirdPartyCookies": true,
-  "CookieControlsMode": 1,
+  "CookieControlsMode": 1,  # Aggressive cookie blocking
 
   "MetricsReportingEnabled": false,
   "SigninAllowed": false,
@@ -159,14 +160,15 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
   "BraveShieldsDefault": 2,
 
   "HttpsUpgradesEnabled": true,
-  "WebRtcIPHandlingPolicy": "disable_non_proxied_udp",
+  "WebRtcIPHandlingPolicy": "disable_non_proxied_udp",  # WebRTC policy to disable non-proxied UDP
   "WebRTCUDPPortRange": "0-0",
 
   "ClearBrowsingDataOnExitList": [
     "browsing_history",
     "download_history",
     "cookies_and_other_site_data",
-    "cached_images_and_files"
+    "cached_images_and_files",
+    "site_settings"  # Added full data deletion on close
   ],
 
   "DefaultSearchProviderEnabled": true,

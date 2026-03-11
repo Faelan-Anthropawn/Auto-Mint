@@ -1,127 +1,44 @@
-#!/usr/bin/env bash
-
-set -e
-
-sudo -v
-while true; do sudo -n true; sleep 60; done 2>/dev/null &
-########################################
-# Install Brave
-########################################
-
-echo "Installing Brave..."
-curl -fsS https://dl.brave.com/install.sh | sh
+#!/bin/bash
 
 ########################################
-# Brave Enterprise Policies
+# Create Required Folder Structure for Cinnamon Desktop Layout
 ########################################
 
-echo "Applying Brave enterprise policies..."
+echo "Creating required folder structure for Cinnamon layout, taskbar, panel, and settings..."
 
-sudo mkdir -p /etc/brave-browser/policies/managed
+# Define root folder for the local setup
+ROOT_DIR="$HOME/Cinnamon_Config"
 
-sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null << 'EOF'
-{
-  "HomepageIsNewTabPage": true,
-  "RestoreOnStartup": 1,
+# Create the folder structure
+mkdir -p "$ROOT_DIR/.config/cinnamon"
+mkdir -p "$ROOT_DIR/.local/share/cinnamon/applets"
+mkdir -p "$ROOT_DIR/.themes"
+mkdir -p "$ROOT_DIR/.icons"
+mkdir -p "$ROOT_DIR/.config/dconf"
 
-  "PasswordManagerEnabled": false,
-  "AutofillAddressEnabled": false,
-  "AutofillCreditCardEnabled": false,
+# Create panel settings and applet configuration files in the appropriate directories
+echo "Creating dummy panel settings and applet configuration files..."
 
-  "EnableDoNotTrack": true,
-  "EnableReferrers": false,
+# Example panel settings (these would typically be custom settings)
+echo '{"panel-layout": "horizontal", "taskbar-size": "medium"}' > "$ROOT_DIR/.config/cinnamon/panel-settings.json"
+echo '{"applets": ["clock", "show-desktop", "window-list"]}' > "$ROOT_DIR/.config/cinnamon/applets.json"
+echo '{"panel-launchers": ["applications-menu", "show-desktop"]}' > "$ROOT_DIR/.config/cinnamon/panel-launchers.json"
 
-  "HardwareAccelerationModeEnabled": false,
-  "BackgroundModeEnabled": false,
-  "BackgroundNetworkingEnabled": false,
+# Create a dummy applet folder with a placeholder applet
+mkdir -p "$ROOT_DIR/.local/share/cinnamon/applets/example-applet"
+echo "This is a dummy applet configuration." > "$ROOT_DIR/.local/share/cinnamon/applets/example-applet/applet.json"
 
-  "BlockThirdPartyCookies": true,
-  "CookieControlsMode": 2,
+# Create a dummy theme and icon directory with placeholder files
+mkdir -p "$ROOT_DIR/.themes/example-theme"
+echo "Example theme file" > "$ROOT_DIR/.themes/example-theme/gtk-3.0/gtk.css"
+mkdir -p "$ROOT_DIR/.icons/example-icons"
+echo "Example icon" > "$ROOT_DIR/.icons/example-icons/icon.png"
 
-  "MetricsReportingEnabled": false,
-  "SigninAllowed": false,
-  "SyncDisabled": true,
+# Create a dummy dconf user settings file
+echo "This is a dummy dconf user settings file." > "$ROOT_DIR/.config/dconf/user"
 
-  "BraveRewardsDisabled": true,
-  "BraveWalletDisabled": true,
-  "BraveShieldsEnabled": true,
-  "BraveShieldsDefault": 2,
+echo "Folder structure and example files created successfully!"
 
-  "HttpsUpgradesEnabled": true,
-
-  "WebRtcIPHandlingPolicy": "disable_non_proxied_udp",
-  "WebRTCUDPPortRange": "0-0",
-
-  "ClearBrowsingDataOnExitList": [
-    "browsing_history",
-    "download_history",
-    "cookies_and_other_site_data",
-    "cached_images_and_files",
-    "passwords",
-    "autofill_data",
-    "site_settings",
-    "shields_settings",
-    "hosted_app_data"
-  ],
-
-  "DefaultSearchProviderEnabled": true,
-  "DefaultSearchProviderName": "DuckDuckGo",
-  "DefaultSearchProviderSearchURL": "https://duckduckgo.com/?q={searchTerms}",
-
-  "NetworkPredictionOptions": 2,
-  "AlternateErrorPagesEnabled": false,
-
-  "SafeBrowsingEnabled": false,
-  "SafeBrowsingExtendedReportingEnabled": false,
-  "SearchSuggestEnabled": false,
-
-  "ExtensionInstallSources": [
-    "https://clients2.google.com/service/update2/crx"
-  ],
-
-  "ExtensionInstallForcelist": [
-    "ghmbeldphafepmbegfdlkpapadhbakde;https://clients2.google.com/service/update2/crx"
-  ],
-
-  "BlockFingerprinting": true,
-  "ShowBookmarkBar": "always"
-}
-EOF
-
-########################################
-# Fix Policy Permissions
-########################################
-
-sudo chmod -R 755 /etc/brave-browser/policies
-
-########################################
-# Restore Custom Brave Preferences
-########################################
-
-echo "Stopping Brave if it’s running..."
-pkill brave-browser 2>/dev/null || true
-
-echo "Fetching custom Preferences file..."
-PREF_URL="https://raw.githubusercontent.com/Faelan-Anthropawn/Auto-Mint/main/Preferences"
-BRAVE_PREF_DIR="$HOME/.config/BraveSoftware/Brave-Browser/Default"
-
-# Ensure the config directory exists
-mkdir -p "$BRAVE_PREF_DIR"
-
-# Download and overwrite Brave Preferences
-curl -fsSL "$PREF_URL" -o "$BRAVE_PREF_DIR/Preferences"
-
-echo "Preferences successfully applied."
-
-########################################
-# Harden Brave Launch Flags
-########################################
-
-echo "Applying Brave hardened launch flags..."
-
-sudo sed -i 's|Exec=brave-browser|Exec=brave-browser --disable-background-networking --disable-sync --disable-domain-reliability --disable-component-update --disable-features=InterestCohort,PrivacySandboxSettings4,AutofillServerCommunication --force-webrtc-ip-handling-policy=disable_non_proxied_udp|' /usr/share/applications/brave-browser.desktop
-
-echo "Brave hardened setup complete."
-echo " Complete"
-echo ""
-echo "Recommended: Reboot to apply GRUB changes."
+# Output the created folder structure
+echo "Created folder structure:"
+tree "$ROOT_DIR"

@@ -126,8 +126,7 @@ gsettings set org.cinnamon.desktop.peripherals.touchpad click-method 'fingers'
 ########################################
 # Screen timeout
 ########################################
-echo "Setting idle timeout..."
-gsettings set org.cinnamon.desktop.session idle-delay 600
+
 
 ########################################
 # Finished

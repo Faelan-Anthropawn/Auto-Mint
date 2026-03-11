@@ -5,7 +5,6 @@ set -e
 sudo -v
 while true; do sudo -n true; sleep 60; done 2>/dev/null &
 
-
 ########################################
 # Install Brave
 ########################################
@@ -30,7 +29,7 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
   "AutofillAddressEnabled": false,
   "AutofillCreditCardEnabled": false,
 
-  "EnableDoNotTrack": true,  # Ensure Do Not Track is enabled
+  "EnableDoNotTrack": true,  # Enabling Do Not Track signal
   "EnableReferrers": false,
 
   "HardwareAccelerationModeEnabled": false,
@@ -38,7 +37,7 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
   "BackgroundNetworkingEnabled": false,
 
   "BlockThirdPartyCookies": true,  # Aggressive blocking of third-party cookies
-  "CookieControlsMode": 1,  # Aggressive cookie blocking
+  "CookieControlsMode": 1,  # Strict cookie blocking
 
   "MetricsReportingEnabled": false,
   "SigninAllowed": false,
@@ -47,19 +46,20 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
   "BraveRewardsDisabled": true,
   "BraveWalletDisabled": true,
   "BraveShieldsEnabled": true,
-  "BraveShieldsDefault": 2,  # Enhanced ad and tracker blocking
+  "BraveShieldsDefault": 2,  # Shields enabled by default for enhanced privacy
 
   "HttpsUpgradesEnabled": true,
   "WebRtcIPHandlingPolicy": "disable_non_proxied_udp",  # WebRTC IP handling policy
-  "WebRTCUDPPortRange": "0-0",
+  "WebRTCUDPPortRange": "0-0",  # Blocking WebRTC leaks
 
   "ClearBrowsingDataOnExitList": [
     "browsing_history",
     "download_history",
     "cookies_and_other_site_data",
     "cached_images_and_files",
-    "site_settings",  # Ensuring all relevant data is cleared on exit
-    "passwords"  # Adding password data clearing on exit
+    "site_settings",  # Deleting site settings on exit
+    "passwords",  # Deleting passwords on exit
+    "local_storage"  # Deleting local storage on exit
   ],
 
   "DefaultSearchProviderEnabled": true,
@@ -117,7 +117,7 @@ sudo tee /etc/brave-browser/policies/managed/policies.json > /dev/null <<'EOF'
     }
   ],
 
-  "BlockFingerprinting": true,  # Adding fingerprinting protection
+  "BlockFingerprinting": true,  # Block browser fingerprinting
 
   "ShowBookmarkBar": "always"  # Always show the bookmark bar
 }
@@ -138,7 +138,6 @@ echo "Applying Brave hardened launch flags..."
 sudo sed -i 's|Exec=brave-browser|Exec=brave-browser --disable-background-networking --disable-sync --disable-domain-reliability --disable-component-update --disable-features=InterestCohort,PrivacySandboxSettings4,AutofillServerCommunication --force-webrtc-ip-handling-policy=disable_non_proxied_udp|' /usr/share/applications/brave-browser.desktop
 
 echo "Brave hardened setup complete."
-
 
 echo " Complete"
 echo ""

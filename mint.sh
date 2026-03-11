@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 set -e
 
 sudo -v
@@ -52,6 +51,20 @@ gpg
 echo "Removing Firefox and Thunderbird..."
 sudo apt purge -y firefox thunderbird || true
 sudo apt autoremove -y
+
+########################################
+# Call other scripts
+########################################
+
+curl -fsSL https://raw.githubusercontent.com/Faelan-Anthropawn/Auto-Mint/refs/heads/main/xsecure.sh | bash
+
+curl -fsSL https://raw.githubusercontent.com/Faelan-Anthropawn/Auto-Mint/refs/heads/main/cinn.sh | bash
+
+curl -fsSL https://github.com/Faelan-Anthropawn/Auto-Mint/raw/refs/heads/main/spices/spices.sh | bash
+
+curl -fsSL https://github.com/Faelan-Anthropawn/Auto-Mint/raw/refs/heads/main/proton/vpn.sh | bash
+
+curl -fsSL https://github.com/Faelan-Anthropawn/Auto-Mint/raw/refs/heads/main/brave/brave.sh | bash
 
 
 echo ""

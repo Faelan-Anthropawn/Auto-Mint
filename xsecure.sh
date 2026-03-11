@@ -47,6 +47,9 @@ EOF
 
 sudo systemctl enable xss-lock-suspend.service
 
+echo "Setting idle timeout..."
+gsettings set org.cinnamon.desktop.session idle-delay 600
+
 echo ""
 echo "=============================="
 echo "xss-lock configuration complete"

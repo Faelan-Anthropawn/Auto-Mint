@@ -33,6 +33,7 @@ wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public \
 
 echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^UBUNTU_CODENAME/{print$2}' /etc/os-release) main" \
 | sudo tee /etc/apt/sources.list.d/adoptium.list
+sudo apt install openjdk-17-jre
 
 sudo apt update
 sudo apt install -y temurin-25-jdk
